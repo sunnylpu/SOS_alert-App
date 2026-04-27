@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.android.gms.location.*
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -46,6 +47,7 @@ class DashBoardFragment : Fragment() {
         const val TAG = "DashBoardFragment"
         const val SIGN_IN_RESULT_CODE = 1001
         private const val PERMISSION_SEND_SMS = 2
+        private const val PERMISSION_LOCATION = 1
     }
 
     private val viewModel by viewModels<LoginViewModel>()
@@ -155,16 +157,49 @@ class DashBoardFragment : Fragment() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if(requestCode == PERMISSION_SEND_SMS){
-            uiScope.launch {
-                withContext(Dispatchers.IO) {
-                    emergencyFun()
+        if (requestCode == PERMISSION_SEND_SMS) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                uiScope.launch {
+                    withContext(Dispatchers.IO) {
+                        emergencyFun()
+                    }
                 }
+            }
+        } else if (requestCode == PERMISSION_LOCATION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLocation()
             }
         }
     }
 
     private fun getLocation() {
+        if (ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity!!, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_LOCATION)
+            return
+        }
+
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+            .setWaitForAccurateLocation(false)
+            .setMinUpdateIntervalMillis(500)
+            .setMaxUpdateDelayMillis(1000)
+            .build()
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    if (location != null) {
+                        lastLocation = location
+                        Latitude = (location.latitude).toString()
+                        Longitude = (location.longitude).toString()
+                        fusedLocationClient.removeLocationUpdates(this)
+                    }
+                }
+            }
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 lastLocation = location
@@ -176,30 +211,42 @@ class DashBoardFragment : Fragment() {
 
 
     private fun emergencyFun() {
-        val db =
-            Room.databaseBuilder(activity!!, GuardianDatabase::class.java, "GuardianDB").build()
+        val db = GuardianDatabase.getInstance(activity!!)
         val emailList: List<Guardian> = db.guardianDatabaseDao().getEmail()
+
+        if (emailList.isEmpty()) {
+            uiScope.launch {
+                Toast.makeText(activity!!, "No Guardians added!", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
 
         var maillist: String = ""
         val subject: String = "From Women Safety App"
         val text: String = resources.getString(R.string.problem)
         val text1 =
-            text.plus("https://www.google.com/maps/search/?api=1&query=$Latitude,$Longitude")
+            text.plus(" https://www.google.com/maps/search/?api=1&query=$Latitude,$Longitude")
 
-        emailList.forEach() {
-            maillist = emailList.joinToString(separator = ",") { it -> "${it.guardianEmail}" }
+        maillist = emailList.joinToString(separator = ",") { it.guardianEmail }
+
+        val smsManager: SmsManager = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            activity!!.getSystemService(SmsManager::class.java)
+        } else {
+            SmsManager.getDefault()
         }
-        emailList.forEach() {
-            val smsManager = SmsManager.getDefault() as SmsManager
-            smsManager.sendTextMessage("${it.guardianPhoneNo}", null, "$text1", null, null)
+
+        emailList.forEach {
+            if (it.guardianPhoneNo.isNotBlank()) {
+                smsManager.sendTextMessage(it.guardianPhoneNo, null, text1, null, null)
+            }
         }
 
         val shareIntent = Intent(Intent.ACTION_SEND)
-
-        shareIntent.setType("message/rfc822")
-            .putExtra(Intent.EXTRA_EMAIL, arrayOf(maillist))
-            .putExtra(Intent.EXTRA_SUBJECT, subject)
-            .putExtra(Intent.EXTRA_TEXT, text1)
+        shareIntent.type = "message/rfc822"
+        shareIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(maillist))
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, subject)
+        shareIntent.putExtra(Intent.EXTRA_TEXT, text1)
+        
         startActivity(Intent.createChooser(shareIntent, "Send mail using.."))
     }
 
