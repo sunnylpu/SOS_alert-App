@@ -10,7 +10,7 @@ apply plugin: 'androidx.navigation.safeargs.kotlin'
 
 apply plugin: 'kotlin-kapt'
 android {
-    namespace "com.shubham.womensafety"
+    namespace "com.Akash.womensafety"
     compileSdkVersion 33
     defaultConfig {
         applicationId "com.Akash.womensafety"

@@ -1,4 +1,4 @@
-package com.shubham.womensafety.database
+package com.Akash.womensafety.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao

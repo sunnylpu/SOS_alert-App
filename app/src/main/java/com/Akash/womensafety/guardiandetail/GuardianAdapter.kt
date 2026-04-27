@@ -1,12 +1,12 @@
-package com.shubham.womensafety.guardiandetail
+package com.Akash.womensafety.guardiandetail
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.TextView
-import com.shubham.womensafety.R
-import com.shubham.womensafety.database.Guardian
+import com.Akash.womensafety.R
+import com.Akash.womensafety.database.Guardian
 
 class GuardianAdapter(val guardians: List<Guardian>)
     : RecyclerView.Adapter<GuardianAdapter.ViewHolder>(){

@@ -1,7 +1,7 @@
 # Women Safety App
 <h1 align="center">
   <br>
-  <img src="https://github.com/ShubhamYGS/WomenSafetyApp/blob/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Foco" width="160">
+  <img src="https://github.com/sunnylpu/SOS_alert-App/blob/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Foco" width="160">
 </h1>
 <h4 align="center">This app is a made during an event organized by Google Devs India. <a href="goo.gle/30DaysOfKotlin" target="_blank">#30DaysOfKotlin</a>.</h4>
 
@@ -48,7 +48,7 @@ The app is having mainly three sections:
 
     The MIT License (MIT)
     
-    Copyright (c) 2020 Shubham Patil
+    Copyright (c) 2026 Akash
     
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal

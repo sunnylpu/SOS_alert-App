@@ -1,4 +1,4 @@
-package com.shubham.womensafety
+package com.Akash.womensafety
 
 import android.Manifest
 import android.app.Activity
@@ -25,10 +25,10 @@ import com.firebase.ui.auth.IdpResponse
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
-import com.shubham.womensafety.FirebaseAuth.LoginViewModel
-import com.shubham.womensafety.database.Guardian
-import com.shubham.womensafety.database.GuardianDatabase
-import com.shubham.womensafety.databinding.FragmentDashBoardBinding
+import com.Akash.womensafety.FirebaseAuth.LoginViewModel
+import com.Akash.womensafety.database.Guardian
+import com.Akash.womensafety.database.GuardianDatabase
+import com.Akash.womensafety.databinding.FragmentDashBoardBinding
 import kotlinx.coroutines.*
 
 class DashBoardFragment : Fragment() {
