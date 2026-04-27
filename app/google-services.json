@@ -25,7 +25,41 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "476616948109-hgt784m3vvomp653lo3ojr1fs36gu48d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476616948109:android:857a6070c71683adde25c4",
+        "android_client_info": {
+          "package_name": "com.akash.womensafety"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "476616948109-hgt784m3vvomp653lo3ojr1fs36gu48d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzwOYf1nVGZ0Baziwqt1pr6rJG1C-AzV4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "476616948109-hgt784m3vvomp653lo3ojr1fs36gu48d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

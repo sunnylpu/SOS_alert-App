@@ -1,4 +1,4 @@
-package com.Akash.womensafety
+package com.akash.womensafety
 
 import android.Manifest
 import android.app.Activity
@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.telephony.SmsManager
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,10 +26,10 @@ import com.firebase.ui.auth.IdpResponse
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
-import com.Akash.womensafety.FirebaseAuth.LoginViewModel
-import com.Akash.womensafety.database.Guardian
-import com.Akash.womensafety.database.GuardianDatabase
-import com.Akash.womensafety.databinding.FragmentDashBoardBinding
+import com.akash.womensafety.FirebaseAuth.LoginViewModel
+import com.akash.womensafety.database.Guardian
+import com.akash.womensafety.database.GuardianDatabase
+import com.akash.womensafety.databinding.FragmentDashBoardBinding
 import kotlinx.coroutines.*
 
 class DashBoardFragment : Fragment() {
@@ -52,20 +53,30 @@ class DashBoardFragment : Fragment() {
 
     private val viewModel by viewModels<LoginViewModel>()
 
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            for (location in locationResult.locations) {
+                if (location != null) {
+                    lastLocation = location
+                    Latitude = (location.latitude).toString()
+                    Longitude = (location.longitude).toString()
+                }
+            }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(
             inflater,
             R.layout.fragment_dash_board, container, false
         )
-
-        getLocation()
 
         binding.guardianButton.setOnClickListener { view: View ->
             view.findNavController()
@@ -77,17 +88,17 @@ class DashBoardFragment : Fragment() {
         }
 
         binding.emerButton.setOnClickListener {
-            getLocation()
-            if (Longitude.isNullOrBlank() || Longitude.isNullOrEmpty()) {
+            if (Longitude.isBlank()) {
                 Toast.makeText(
-                    activity!!,
-                    "Click on Location button and try again",
+                    requireActivity(),
+                    "Fetching location... please wait a moment",
                     Toast.LENGTH_LONG
                 ).show()
+                startLocationUpdates()
             } else {
-                if (ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.SEND_SMS)
+                if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.SEND_SMS)
                     != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(activity!!, arrayOf(Manifest.permission.SEND_SMS), PERMISSION_SEND_SMS)
+                    ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.SEND_SMS), PERMISSION_SEND_SMS)
                 } else {
                     uiScope.launch {
                         withContext(Dispatchers.IO) {
@@ -99,6 +110,36 @@ class DashBoardFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        startLocationUpdates()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopLocationUpdates()
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_LOCATION)
+            return
+        }
+
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            interval = 5000
+            fastestInterval = 2000
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+    }
+
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -122,7 +163,7 @@ class DashBoardFragment : Fragment() {
     }
 
     private fun observeAuthenticationState() {
-        viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
+        viewModel.authenticationState.observe(viewLifecycleOwner) { authenticationState ->
             when (authenticationState) {
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> {
                     binding.textView.text =
@@ -132,7 +173,7 @@ class DashBoardFragment : Fragment() {
                     launchSignInFlow()
                 }
             }
-        })
+        }
     }
 
     private fun launchSignInFlow() {
@@ -167,71 +208,34 @@ class DashBoardFragment : Fragment() {
             }
         } else if (requestCode == PERMISSION_LOCATION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLocation()
-            }
-        }
-    }
-
-    private fun getLocation() {
-        if (ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(activity!!, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity!!, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_LOCATION)
-            return
-        }
-
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
-            .setWaitForAccurateLocation(false)
-            .setMinUpdateIntervalMillis(500)
-            .setMaxUpdateDelayMillis(1000)
-            .build()
-
-        val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    if (location != null) {
-                        lastLocation = location
-                        Latitude = (location.latitude).toString()
-                        Longitude = (location.longitude).toString()
-                        fusedLocationClient.removeLocationUpdates(this)
-                    }
-                }
-            }
-        }
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                lastLocation = location
-                Latitude = (location.latitude).toString()
-                Longitude = (location.longitude).toString()
+                startLocationUpdates()
             }
         }
     }
 
 
     private fun emergencyFun() {
-        val db = GuardianDatabase.getInstance(activity!!)
+        val db = GuardianDatabase.getInstance(requireActivity())
         val emailList: List<Guardian> = db.guardianDatabaseDao().getEmail()
 
         if (emailList.isEmpty()) {
             uiScope.launch {
-                Toast.makeText(activity!!, "No Guardians added!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireActivity(), "No Guardians added!", Toast.LENGTH_SHORT).show()
             }
             return
         }
 
-        var maillist: String = ""
         val subject: String = "From Women Safety App"
         val text: String = resources.getString(R.string.problem)
         val text1 =
-            text.plus(" https://www.google.com/maps/search/?api=1&query=$Latitude,$Longitude")
+            text + " https://www.google.com/maps/search/?api=1&query=$Latitude,$Longitude"
 
-        maillist = emailList.joinToString(separator = ",") { it.guardianEmail }
+        val maillist = emailList.joinToString(separator = ",") { it.guardianEmail }
 
         val smsManager: SmsManager = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            activity!!.getSystemService(SmsManager::class.java)
+            requireActivity().getSystemService(SmsManager::class.java)
         } else {
+            @Suppress("DEPRECATION")
             SmsManager.getDefault()
         }
 

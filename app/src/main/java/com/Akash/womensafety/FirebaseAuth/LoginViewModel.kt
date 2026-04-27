@@ -1,4 +1,4 @@
-package com.Akash.womensafety.FirebaseAuth
+package com.akash.womensafety.FirebaseAuth
 
 
 import androidx.lifecycle.ViewModel

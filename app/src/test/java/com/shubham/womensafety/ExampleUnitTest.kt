@@ -1,4 +1,4 @@
-package com.Akash.womensafety
+package com.akash.womensafety
 
 import org.junit.Test
 

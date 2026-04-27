@@ -1,4 +1,4 @@
-package com.Akash.womensafety
+package com.akash.womensafety
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -8,7 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.firebase.ui.auth.AuthUI
-import com.Akash.womensafety.databinding.ActivityMainBinding
+import com.akash.womensafety.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

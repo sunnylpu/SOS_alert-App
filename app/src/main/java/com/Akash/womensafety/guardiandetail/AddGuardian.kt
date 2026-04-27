@@ -1,4 +1,4 @@
-package com.Akash.womensafety.guardiandetail
+package com.akash.womensafety.guardiandetail
 
 import android.os.Bundle
 import android.text.TextUtils
@@ -10,9 +10,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
-import com.Akash.womensafety.R
-import com.Akash.womensafety.database.Guardian
-import com.Akash.womensafety.databinding.FragmentAddGuardianBinding
+import com.akash.womensafety.R
+import com.akash.womensafety.database.Guardian
+import com.akash.womensafety.databinding.FragmentAddGuardianBinding
 
 class AddGuardian : Fragment() {
 

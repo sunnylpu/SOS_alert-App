@@ -1,4 +1,4 @@
-package com.Akash.womensafety.database
+package com.akash.womensafety.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

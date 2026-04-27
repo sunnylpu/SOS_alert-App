@@ -1,4 +1,4 @@
-package com.Akash.womensafety.utils
+package com.akash.womensafety.utils
 
 import android.Manifest
 import android.content.Context
